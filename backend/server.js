@@ -9,10 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check route
 app.get('/', (req, res) => {
   res.send('✅ Backend is live. Use POST /api/generate');
 });
 
+// Image generation route
 app.post('/api/generate', async (req, res) => {
   const { prompt } = req.body;
   console.log("🟡 Prompt received:", prompt);
@@ -23,22 +25,22 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
+      'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5',
       { inputs: prompt },
       {
         headers: {
           Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
           Accept: 'application/json',
         },
-        responseType: 'arraybuffer', // because image is binary
+        responseType: 'arraybuffer',
       }
     );
 
-    // Convert image buffer to base64 for browser
     const imageBuffer = response.data;
     const base64Image = Buffer.from(imageBuffer, 'binary').toString('base64');
     const imageUrl = `data:image/png;base64,${base64Image}`;
 
+    console.log("🟢 Image generated");
     res.json({ imageUrl });
 
   } catch (error) {
@@ -50,5 +52,6 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
+// Port binding (Render compatible)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
