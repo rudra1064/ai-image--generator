@@ -3,11 +3,13 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config(); // Loads .env file
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// POST route for generating image using OpenAI
 app.post('/api/generate', async (req, res) => {
   const { prompt } = req.body;
 
@@ -27,10 +29,21 @@ app.post('/api/generate', async (req, res) => {
       }
     );
 
-    res.json({ imageUrl: response.data.data[0].url }); // ✅ must match frontend
+    // Send back the image URL
+    res.json({ imageUrl: response.data.data[0].url });
+
   } catch (error) {
-    res.status(500).json({ error: 'Failed to generate image' });
+    // Print exact error for debugging (in Render logs)
+    console.error('OpenAI Error:', error.response?.data || error.message);
+
+    // Send error to frontend/postman
+    res.status(500).json({
+      error: 'Failed to generate image',
+      details: error.response?.data || error.message
+    });
   }
 });
 
-app.listen(5000, () => console.log('Server running'));
+// Use dynamic PORT for Render
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
