@@ -6,7 +6,8 @@ function App() {
   const [imageUrl, setImageUrl] = useState('');
 
   const handleGenerate = async () => {
-    const response = await fetch('https://ai-image-generator-6ieh.onrender.com', {
+    const response = await fetch('https://ai-image-generator-6ieh.onrender.com/api/generate', {
+
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt })
