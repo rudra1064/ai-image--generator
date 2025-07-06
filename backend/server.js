@@ -17,24 +17,20 @@ app.post('/api/generate', async (req, res) => {
       {
         prompt,
         n: 1,
-        size: '512x512'
+        size: '512x512',
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-        }
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
       }
     );
 
-    const imageUrl = response.data.data[0].url;
-    res.json({ imageUrl });
-
+    res.json({ imageUrl: response.data.data[0].url }); // ✅ must match frontend
   } catch (error) {
-    console.error('Error generating image:', error?.response?.data || error.message);
-    res.status(500).json({ error: 'Image generation failed' });
+    res.status(500).json({ error: 'Failed to generate image' });
   }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(5000, () => console.log('Server running'));
