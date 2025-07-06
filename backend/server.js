@@ -25,16 +25,17 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5',
-      { inputs: prompt },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
-          Accept: 'application/json',
-        },
-        responseType: 'arraybuffer',
-      }
-    );
+  'https://api-inference.huggingface.co/models/stablediffusionapi/stable-diffusion',
+  { inputs: prompt },
+  {
+    headers: {
+      Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
+      Accept: 'application/json',
+    },
+    responseType: 'arraybuffer',
+  }
+);
+
 
     const imageBuffer = response.data;
     const base64Image = Buffer.from(imageBuffer, 'binary').toString('base64');
