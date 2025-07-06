@@ -3,56 +3,52 @@ import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-dotenv.config(); // Loads .env file
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Root route for health check
 app.get('/', (req, res) => {
   res.send('✅ Backend is live. Use POST /api/generate');
 });
 
-// POST route to generate image
 app.post('/api/generate', async (req, res) => {
-  let { prompt } = req.body;
+  const { prompt } = req.body;
   console.log("🟡 Prompt received:", prompt);
 
-  // Fallback in case prompt is missing
   if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
-    prompt = "A futuristic robot playing guitar on Mars";
+    return res.status(400).json({ error: "Prompt is required" });
   }
 
   try {
     const response = await axios.post(
-      'https://api.openai.com/v1/images/generations',
-      {
-        prompt: prompt,
-        n: 1,
-        size: '512x512',
-      },
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
+      { inputs: prompt },
       {
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
+          Accept: 'application/json',
         },
+        responseType: 'arraybuffer', // because image is binary
       }
     );
 
-    const imageUrl = response.data.data[0].url;
-    console.log("🟢 Image generated:", imageUrl);
+    // Convert image buffer to base64 for browser
+    const imageBuffer = response.data;
+    const base64Image = Buffer.from(imageBuffer, 'binary').toString('base64');
+    const imageUrl = `data:image/png;base64,${base64Image}`;
+
     res.json({ imageUrl });
 
   } catch (error) {
-    console.error("🔴 OpenAI Error:", error.response?.data || error.message);
+    console.error("🔴 Hugging Face Error:", error.response?.data || error.message);
     res.status(500).json({
-      error: "Failed to generate image",
+      error: "Image generation failed",
       details: error.response?.data || error.message
     });
   }
 });
 
-// Use Render-compatible port
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
